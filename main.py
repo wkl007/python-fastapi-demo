@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated, Literal, Any
 from uuid import UUID
 
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form
 from pydantic import BaseModel, Field, HttpUrl, EmailStr
 
 app = FastAPI()
@@ -310,5 +310,9 @@ async def read_item4(item_id: str):
 async def create_item(name: str):
     return {'name': name}
 
+
+@app.post('/login/')
+async def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
+    return {'username': username}
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
