@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Annotated
+
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 from enum import Enum
 
@@ -28,9 +30,20 @@ async def root():
 
 
 # 查询参数，默认值
+# 参数声明额外的信息和校验
 @app.get('/items/')
-async def read_item(skip: int = 0, limit: int = 10):
-    return fake_items_db[skip:skip + limit]
+async def read_items(
+        q: Annotated[
+            str | None, Query(title='Query string',
+                              description='Query string description',
+                              min_length=3,
+                              pattern="^fixedquery$",
+                              alias='item-query',
+                              deprecated=True)] = None):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({'q': q})
+    return results
 
 
 # 可选参数
