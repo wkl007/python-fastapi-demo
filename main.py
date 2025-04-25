@@ -418,5 +418,21 @@ class Item(BaseModel):
 @app.post("/items7/", tags=['items'])
 async def create_item(item: Item):
     return item
+
+
+class Item(BaseModel):
+    title: str
+    timestamp: datetime
+    description: str | None = None
+
+
+fake_db = {}
+
+
+@app.put('/item7/{id}', tags=['items'])
+def update_item(id: str, item: Item):
+    json_compatiable_item_data = jsonable_encoder(item)
+    fake_db[id] = json_compatiable_item_data
+    return json_compatiable_item_data
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
