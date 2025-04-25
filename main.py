@@ -311,8 +311,14 @@ async def create_item(name: str):
     return {'name': name}
 
 
+class FormData(BaseModel):
+    model_config = {"extra": "forbid"}
+    username: str
+    password: str
+
+
 @app.post('/login/')
-async def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
-    return {'username': username}
+async def login(data: Annotated[FormData, Form()]):
+    return {'username': data.username}
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
