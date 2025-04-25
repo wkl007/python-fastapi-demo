@@ -7,8 +7,10 @@ app = FastAPI()
 
 class Item(BaseModel):
     name: str
+    description: str | None = None
     price: float
-    is_offer: bool | None
+    is_offer: bool | None = None
+    tax: float | None = None
 
 
 class ModelName(str, Enum):
@@ -42,9 +44,21 @@ def read_item(item_id: int, q: str | None = None, short: bool = False):
     return item
 
 
+@app.post('/items/')
+def create_item(item: Item):
+    item_dict = item.model_dump()
+    if item.tax is not None:
+        price_with_tax = item.price + item.tax
+        item_dict.update({'price_with_tax': price_with_tax})
+    return item_dict
+
+
 @app.put('/items/{item_id}')
-def update_item(item_id: int, item: Item):
-    return {'item_name': item.name, 'item_id': item_id, "item_price": item.price}
+def update_item(item_id: int, item: Item, q: str | None = None):
+    result = {'item_id': item_id, **item.model_dump()}
+    if q:
+        result.update({'q': q})
+    return result
 
 
 @app.get('/users/me')
