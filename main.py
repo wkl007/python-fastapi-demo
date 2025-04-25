@@ -2,9 +2,14 @@ from enum import Enum
 from typing import Annotated, Literal
 
 from fastapi import FastAPI, Query, Path, Body
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI()
+
+
+class Image(BaseModel):
+    url: HttpUrl
+    name: str
 
 
 class Item(BaseModel):
@@ -13,6 +18,16 @@ class Item(BaseModel):
     price: float = Field(gt=0, description='The price must be greater than zero')
     is_offer: bool | None = None
     tax: float | None = None
+    tags: set[str] = set()  # set 去重
+    image: Image | None = None
+    images: list[Image] | None = None
+
+
+class Offer(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    items: list[Item]
 
 
 class User(BaseModel):
@@ -125,6 +140,23 @@ async def get_model(model_name: ModelName):
 @app.get('/files/{file_path:path}')
 async def read_file(file_path: str):
     return {'file_path': file_path}
+
+
+@app.post('/offers/')
+async def create_offer(offer: Offer):
+    return offer
+
+
+@app.post('/images/multiple/')
+async def create_multiple_images(images: list[Image]):
+    for image in images:
+        print(image.name, image.url)
+    return images
+
+
+@app.post('/index-weights/')
+async def create_index_weights(weights: dict[int, float]):
+    return weights
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
