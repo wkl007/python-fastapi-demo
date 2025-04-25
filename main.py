@@ -79,14 +79,14 @@ async def root():
 
 # 查询参数，默认值
 # 参数声明额外的信息和校验
-@app.get('/items/')
+@app.get('/items/', tags=['items'])
 async def read_items(filter_query: Annotated[FilterParams, Query()]):
     return filter_query
 
 
 # 可选参数
 # ge >= gt > le <= lt <
-@app.get('/items/{item_id}')
+@app.get('/items/{item_id}', tags=['items'], description='这是测试')
 def read_item(item_id: Annotated[int, Path(title='The ID of the item to get', gt=0, le=1000)],
               q: str,
               size: Annotated[float, Query(gt=0, lt=10.5)],
@@ -101,8 +101,17 @@ def read_item(item_id: Annotated[int, Path(title='The ID of the item to get', gt
     return item
 
 
-@app.post('/items/')
+@app.post('/items/', tags=['items'], summary='Create an Item', response_description='我来测试一下')
 def create_item(item: Item):
+    """
+    Create an item with all the information:
+
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
     item_dict = item.model_dump()
     if item.tax is not None:
         price_with_tax = item.price + item.tax
@@ -110,7 +119,7 @@ def create_item(item: Item):
     return item_dict
 
 
-@app.put('/items/{item_id}')
+@app.put('/items/{item_id}', tags=['items'], deprecated=True)
 def update_item(item_id: Annotated[int, Path(title='The ID of the item to get', ge=0, le=1000)],
                 item: Annotated[Item, Body(embed=True)],
                 user: User,
@@ -134,7 +143,7 @@ async def read_user(user_id: str):
 
 # 多个路径和查询参数
 # 必选查询参数
-@app.get('/users/{user_id}/items/{item_id}')
+@app.get('/users/{user_id}/items/{item_id}', tags=['items'])
 async def read_user_item(user_id: int, item_id: str, needy: str, q: str | None = None, short: bool = False):
     item = {'item_id': item_id, 'owner_id': user_id, 'needy': needy}
     if q:
@@ -179,7 +188,7 @@ async def create_index_weights(weights: dict[int, float]):
     return weights
 
 
-@app.put('/items2/{item_id}')
+@app.put('/items2/{item_id}', tags=['items'])
 async def read_items2(
         item_id: UUID,
         start_datetime: Annotated[datetime, Body()],
@@ -227,13 +236,13 @@ async def read_header(headers: Annotated[CommonHeaders, Header()]):
 
 
 # response_model_include 包含哪一项，只对当个对象生效，列表对象无用
-@app.post('/items3/', response_model=Item, response_model_include={'name'})
+@app.post('/items3/', response_model=Item, response_model_include={'name'}, tags=['items'])
 async def create_item3(item: Item) -> Any:
     return item
 
 
 # response_model_exclude_unset 忽略默认值
-@app.get('/items3/', response_model=list[Item], response_model_exclude_unset=True)
+@app.get('/items3/', response_model=list[Item], response_model_exclude_unset=True, tags=['items'])
 async def read_item3() -> Any:
     return [
         {
@@ -354,7 +363,7 @@ async def create_file(file: Annotated[bytes, File()], fileb: Annotated[UploadFil
 items = {"foo": "The Foo Wrestlers"}
 
 
-@app.get('/items6/{item.id}')
+@app.get('/items6/{item.id}', tags=['items'])
 async def read_item(item_id: str):
     if item_id not in items:
         raise HTTPException(status_code=404, detail='Item not found', headers={'X-ERROR': 'There goes my error'})
@@ -394,7 +403,7 @@ async def validation_exception_handler(request, exc: RequestValidationError):
     )
 
 
-@app.get("/items7/{item_id}")
+@app.get("/items7/{item_id}", tags=['items'])
 async def read_item(item_id: int):
     if item_id == 3:
         raise HTTPException(status_code=418, detail="Nope! I don't like 3.")
@@ -406,7 +415,7 @@ class Item(BaseModel):
     size: int
 
 
-@app.post("/items7/")
+@app.post("/items7/", tags=['items'])
 async def create_item(item: Item):
     return item
 # if __name__ == '__main__':
