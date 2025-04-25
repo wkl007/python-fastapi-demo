@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Annotated, Literal
 
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Body
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -13,6 +13,11 @@ class Item(BaseModel):
     price: float
     is_offer: bool | None = None
     tax: float | None = None
+
+
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
 
 
 class ModelName(str, Enum):
@@ -71,8 +76,12 @@ def create_item(item: Item):
 
 
 @app.put('/items/{item_id}')
-def update_item(item_id: int, item: Item, q: str | None = None):
-    result = {'item_id': item_id, **item.model_dump()}
+def update_item(item_id: Annotated[int, Path(title='The ID of the item to get', ge=0, le=1000)],
+                item: Annotated[Item,Body(embed=True)],
+                user: User,
+                importance: Annotated[int, Body()],
+                q: str | None = None):
+    result = {'item_id': item_id, 'item': item, 'user': user, 'importance': importance}
     if q:
         result.update({'q': q})
     return result
