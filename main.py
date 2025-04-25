@@ -334,5 +334,16 @@ async def create_upload_file(file: Annotated[UploadFile, File(description='A fil
     if not file:
         return {'message': 'No file sent'}
     return {'filename': file.filename, 'content_type': file.content_type}
+
+
+@app.post('/files2/')
+async def create_file(file: Annotated[bytes, File()], fileb: Annotated[UploadFile, File()],
+                      token: Annotated[str, Form()]):
+    return {
+        'file_size': len(file),
+        'token': token,
+        'fileb_content_type': fileb.content_type
+    }
+
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
