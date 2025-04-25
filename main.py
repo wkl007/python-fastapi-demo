@@ -196,7 +196,7 @@ async def read_items2(
 
 
 class Cookies(BaseModel):
-    model_config = {'extra': 'forbid'}
+    # model_config = {'extra': 'forbid'}
     session_id: str
     fatebook_tracker: str | None = None
     googall_tracker: str | None = None
@@ -207,12 +207,18 @@ async def read_cookie(cookies: Annotated[Cookies, Cookie()]):
     return cookies
 
 
+class CommonHeaders(BaseModel):
+    # model_config = {"extra": "forbid"}
+    host: str
+    save_data: bool
+    if_modified_since: str | None = None
+    traceparent: str | None = None
+    x_tag: list[str] = []
+
+
 @app.get('/header/')
-async def read_header(user_agent: Annotated[str | None, Header()] = None,
-                      cookie: Annotated[str | None, Header()] = None,
-                      host: Annotated[str | None, Header()] = None,
-                      x_token: Annotated[list[str] | None, Header()] = None):
-    return {'user_agent': user_agent, 'cookie': cookie, 'host': host, 'x_token': x_token}
+async def read_header(headers: Annotated[CommonHeaders, Header()]):
+    return headers
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
