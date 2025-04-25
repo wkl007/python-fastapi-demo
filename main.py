@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import FastAPI, Query, Path
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -21,6 +21,14 @@ class ModelName(str, Enum):
     lenet = 'lenet'
 
 
+class FilterParams(BaseModel):
+    model_config = {'extra': 'forbid'}
+    limit: int = Field(100, gt=0, le=100)
+    offset: int = Field(0, ge=0)
+    order_by: Literal['created_at', 'updated_at'] = 'created_at'
+    tags: list[str] = []
+
+
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
 
 
@@ -32,18 +40,8 @@ async def root():
 # 查询参数，默认值
 # 参数声明额外的信息和校验
 @app.get('/items/')
-async def read_items(
-        q: Annotated[
-            str | None, Query(title='Query string',
-                              description='Query string description',
-                              min_length=3,
-                              pattern="^fixedquery$",
-                              alias='item-query',
-                              deprecated=True)] = None):
-    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
-    if q:
-        results.update({'q': q})
-    return results
+async def read_items(filter_query: Annotated[FilterParams, Query()]):
+    return filter_query
 
 
 # 可选参数
