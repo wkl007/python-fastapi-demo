@@ -9,8 +9,8 @@ app = FastAPI()
 
 class Item(BaseModel):
     name: str
-    description: str | None = None
-    price: float
+    description: str | None = Field(default=None, title='The description of the item', max_length=300)
+    price: float = Field(gt=0, description='The price must be greater than zero')
     is_offer: bool | None = None
     tax: float | None = None
 
@@ -77,7 +77,7 @@ def create_item(item: Item):
 
 @app.put('/items/{item_id}')
 def update_item(item_id: Annotated[int, Path(title='The ID of the item to get', ge=0, le=1000)],
-                item: Annotated[Item,Body(embed=True)],
+                item: Annotated[Item, Body(embed=True)],
                 user: User,
                 importance: Annotated[int, Body()],
                 q: str | None = None):
