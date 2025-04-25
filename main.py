@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated, Literal, Any
 from uuid import UUID
 
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, UploadFile, File
 from pydantic import BaseModel, Field, HttpUrl, EmailStr
 
 app = FastAPI()
@@ -320,5 +320,19 @@ class FormData(BaseModel):
 @app.post('/login/')
 async def login(data: Annotated[FormData, Form()]):
     return {'username': data.username}
+
+
+@app.post('/files/')
+async def create_file(file: Annotated[bytes, File(description='A file read as bytes')]):
+    if not file:
+        return {'message': 'No file sent'}
+    return {'file_size': len(file)}
+
+
+@app.post('/uploadfile/')
+async def create_upload_file(file: Annotated[UploadFile, File(description='A file read as UploadFile')]):
+    if not file:
+        return {'message': 'No file sent'}
+    return {'filename': file.filename, 'content_type': file.content_type}
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
