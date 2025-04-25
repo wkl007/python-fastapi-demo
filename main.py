@@ -195,9 +195,16 @@ async def read_items2(
     }
 
 
+class Cookies(BaseModel):
+    model_config = {'extra': 'forbid'}
+    session_id: str
+    fatebook_tracker: str | None = None
+    googall_tracker: str | None = None
+
+
 @app.get('/cookie/')
-async def read_cookie(ads_id: Annotated[str | None, Cookie()] = None):
-    return {'ads_id': ads_id}
+async def read_cookie(cookies: Annotated[Cookies, Cookie()]):
+    return cookies
 
 
 @app.get('/header/')
