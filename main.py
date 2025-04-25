@@ -1,6 +1,6 @@
 from datetime import datetime, time, timedelta
 from enum import Enum
-from typing import Annotated, Literal, Any
+from typing import Annotated, Literal, Any, Union
 from uuid import UUID
 
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
@@ -242,22 +242,68 @@ async def read_item3() -> Any:
     ]
 
 
-class UserIn(BaseModel):
+class UserBase(BaseModel):
     username: str
+    email: EmailStr
+    full_name: str | None = None
+
+
+class UserIn(UserBase):
     password: str
-    email: EmailStr
-    full_name: str | None = None
 
 
-class UserOut(BaseModel):
-    username: str
-    email: EmailStr
-    full_name: str | None = None
+class UserOut(UserBase):
+    pass
+
+
+class UserInDB(UserBase):
+    hashed_password: str
+
+
+def fake_password_hasher(raw_password: str):
+    return "supersecret" + raw_password
+
+
+def fake_save_user(user_in: UserIn):
+    hashed_password = fake_password_hasher(user_in.password)
+    user_in_db = UserInDB(**user_in.model_dump(), hashed_password=hashed_password)
+    print('User saved! ..not really')
+    return user_in_db
 
 
 @app.post('/user/', response_model=UserOut)
 async def create_user(user: UserIn) -> Any:
-    return user
+    user_saved = fake_save_user(user)
+    return user_saved
+
+
+class BaseItem(BaseModel):
+    description: str
+    type: str
+
+
+class CarItem(BaseItem):
+    type: str = 'car'
+
+
+class PlaneItem(BaseItem):
+    type: str = 'plane'
+    size: int
+
+
+items4 = {
+    "item1": {"description": "All my friends drive a low rider", "type": "car"},
+    "item2": {
+        "description": "Music is my aeroplane, it's my aeroplane",
+        "type": "plane",
+        "size": 5,
+    },
+}
+
+
+@app.get('/item4/{item_id}', response_model=CarItem | PlaneItem)
+async def read_item4(item_id: str):
+    return items4[item_id]
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
