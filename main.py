@@ -1,8 +1,9 @@
+from datetime import datetime, time, timedelta
 from enum import Enum
 from typing import Annotated, Literal
-from datetime import datetime, time, timedelta
 from uuid import UUID
-from fastapi import FastAPI, Query, Path, Body
+
+from fastapi import FastAPI, Query, Path, Body, Cookie
 from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI()
@@ -192,6 +193,11 @@ async def read_items2(
         "start_process": start_process,
         "duration": duration,
     }
+
+
+@app.get('/cookie/')
+async def read_cookie(ads_id: Annotated[str | None, Cookie()] = None):
+    return {'ads_id': ads_id}
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
