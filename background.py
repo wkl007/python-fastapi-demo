@@ -1,5 +1,6 @@
 from fastapi import BackgroundTasks, FastAPI, Depends
 from typing import Annotated
+from fastapi.staticfiles import StaticFiles
 
 description = """
 ChimichangApp API helps you do awesome stuff. 🚀
@@ -48,6 +49,7 @@ tags_metadata = [
 #               )
 # app = FastAPI(openapi_tags=tags_metadata)
 app = FastAPI(docs_url='/test', redoc_url=None)
+app.mount('/static', StaticFiles(directory='static'))
 
 
 def write_log(message: str):
