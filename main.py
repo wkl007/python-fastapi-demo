@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Annotated, Literal
-
+from datetime import datetime, time, timedelta
+from uuid import UUID
 from fastapi import FastAPI, Query, Path, Body
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -13,14 +14,27 @@ class Image(BaseModel):
 
 
 class Item(BaseModel):
-    name: str
+    name: str = Field(examples=['Foo'])
     description: str | None = Field(default=None, title='The description of the item', max_length=300)
     price: float = Field(gt=0, description='The price must be greater than zero')
     is_offer: bool | None = None
-    tax: float | None = None
+    tax: float | None = Field(default=None, examples=[3.2])
     tags: set[str] = set()  # set 去重
     image: Image | None = None
     images: list[Image] | None = None
+
+    # model_config = {
+    #     'json_schema_extra': {
+    #         'examples': [
+    #             {
+    #                 'name': 'Foo',
+    #                 'description': 'A very nice Item',
+    #                 'price': 35.4,
+    #                 'tax': 3.2
+    #             }
+    #         ]
+    #     }
+    # }
 
 
 class Offer(BaseModel):
@@ -157,6 +171,27 @@ async def create_multiple_images(images: list[Image]):
 @app.post('/index-weights/')
 async def create_index_weights(weights: dict[int, float]):
     return weights
+
+
+@app.put('/items2/{item_id}')
+async def read_items2(
+        item_id: UUID,
+        start_datetime: Annotated[datetime, Body()],
+        end_datetime: Annotated[datetime, Body()],
+        process_after: Annotated[timedelta, Body()],
+        repeat_at: Annotated[time | None, Body()] = None
+):
+    start_process = start_datetime + process_after
+    duration = end_datetime - start_process
+    return {
+        "item_id": item_id,
+        "start_datetime": start_datetime,
+        "end_datetime": end_datetime,
+        "process_after": process_after,
+        "repeat_at": repeat_at,
+        "start_process": start_process,
+        "duration": duration,
+    }
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
