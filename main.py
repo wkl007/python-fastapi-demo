@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import FastAPI, Query, Path, Body, Cookie
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI()
@@ -198,6 +198,14 @@ async def read_items2(
 @app.get('/cookie/')
 async def read_cookie(ads_id: Annotated[str | None, Cookie()] = None):
     return {'ads_id': ads_id}
+
+
+@app.get('/header/')
+async def read_header(user_agent: Annotated[str | None, Header()] = None,
+                      cookie: Annotated[str | None, Header()] = None,
+                      host: Annotated[str | None, Header()] = None,
+                      x_token: Annotated[list[str] | None, Header()] = None):
+    return {'user_agent': user_agent, 'cookie': cookie, 'host': host, 'x_token': x_token}
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
