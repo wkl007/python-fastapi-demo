@@ -1,10 +1,10 @@
 from datetime import datetime, time, timedelta
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Any
 from uuid import UUID
 
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, EmailStr
 
 app = FastAPI()
 
@@ -219,6 +219,45 @@ class CommonHeaders(BaseModel):
 @app.get('/header/')
 async def read_header(headers: Annotated[CommonHeaders, Header()]):
     return headers
+
+
+# response_model_include 包含哪一项，只对当个对象生效，列表对象无用
+@app.post('/items3/', response_model=Item, response_model_include={'name'})
+async def create_item3(item: Item) -> Any:
+    return item
+
+
+# response_model_exclude_unset 忽略默认值
+@app.get('/items3/', response_model=list[Item], response_model_exclude_unset=True)
+async def read_item3() -> Any:
+    return [
+        {
+            'name': '小王',
+            'price': 1
+        },
+        {
+            'name': '小红',
+            'price': 2
+        }
+    ]
+
+
+class UserIn(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+    full_name: str | None = None
+
+
+class UserOut(BaseModel):
+    username: str
+    email: EmailStr
+    full_name: str | None = None
+
+
+@app.post('/user/', response_model=UserOut)
+async def create_user(user: UserIn) -> Any:
+    return user
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
