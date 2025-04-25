@@ -1,9 +1,9 @@
 from datetime import datetime, time, timedelta
 from enum import Enum
-from typing import Annotated, Literal, Any, Union
+from typing import Annotated, Literal, Any
 from uuid import UUID
 
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status
 from pydantic import BaseModel, Field, HttpUrl, EmailStr
 
 app = FastAPI()
@@ -304,6 +304,11 @@ items4 = {
 @app.get('/item4/{item_id}', response_model=CarItem | PlaneItem)
 async def read_item4(item_id: str):
     return items4[item_id]
+
+
+@app.post('/item5', status_code=status.HTTP_201_CREATED)
+async def create_item(name: str):
+    return {'name': name}
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='0.0.0.0', port=9000)
