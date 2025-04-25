@@ -1,8 +1,8 @@
+from enum import Enum
 from typing import Annotated
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Path
 from pydantic import BaseModel
-from enum import Enum
 
 app = FastAPI()
 
@@ -47,11 +47,17 @@ async def read_items(
 
 
 # 可选参数
+# ge >= gt > le <= lt <
 @app.get('/items/{item_id}')
-def read_item(item_id: int, q: str | None = None, short: bool = False):
+def read_item(item_id: Annotated[int, Path(title='The ID of the item to get', gt=0, le=1000)],
+              q: str,
+              size: Annotated[float, Query(gt=0, lt=10.5)],
+              short: bool = False):
     item = {'item_id': item_id}
     if q:
         item.update({'q': q})
+    if size:
+        item.update({'size': size})
     if not short:
         item.update({'description': 'This is an amazing item that has a long description'})
     return item
